@@ -7,6 +7,7 @@ module.exports = {
 		// Base
 		'comma-dangle': [2, 'never'],
 		'indent': [2, 'tab'],
+		'no-else-return': 0,
 		'no-tabs': 0,
 		'object-curly-newline': 0,
 		'object-curly-spacing': [2, 'always', { 'objectsInObjects': false }],
