@@ -7,6 +7,7 @@ const propTypes = {
 	step: PropTypes.number,
 	min: PropTypes.number,
 	max: PropTypes.number,
+	onBlur: PropTypes.func,
 	onChange: PropTypes.func
 };
 
@@ -14,6 +15,7 @@ const defaultProps = {
 	step: 1,
 	min: 0,
 	max: 100,
+	onBlur: null,
 	onChange: null
 };
 
@@ -47,7 +49,12 @@ export default class InputNumeric extends Component {
 
 	onBlur() {
 		const newValue = this.validate(this.state.newValue);
-		this.props.onChange(newValue);
+		if (this.props.onChange) {
+			this.props.onChange(newValue);
+		}
+		if (this.props.onBlur) {
+			this.props.onBlur(newValue);
+		}
 	}
 
 	validate(newValue) {
@@ -71,7 +78,9 @@ export default class InputNumeric extends Component {
 
 	decrement() {
 		const newValue = this.validate(this.props.value - this.props.step);
-		this.props.onChange(newValue);
+		if (this.props.onChange) {
+			this.props.onChange(newValue);
+		}
 	}
 
 	startDecrement() {
@@ -90,11 +99,16 @@ export default class InputNumeric extends Component {
 		if (this.decrementInterval) {
 			clearInterval(this.decrementInterval);
 		}
+		if (this.props.onBlur) {
+			this.props.onBlur(this.state.newValue);
+		}
 	}
 
 	increment() {
 		const newValue = this.validate(this.props.value + this.props.step);
-		this.props.onChange(newValue);
+		if (this.props.onChange) {
+			this.props.onChange(newValue);
+		}
 	}
 
 	startIncrement() {
@@ -112,6 +126,9 @@ export default class InputNumeric extends Component {
 		}
 		if (this.incrementInterval) {
 			clearInterval(this.incrementInterval);
+		}
+		if (this.props.onBlur) {
+			this.props.onBlur(this.state.newValue);
 		}
 	}
 
