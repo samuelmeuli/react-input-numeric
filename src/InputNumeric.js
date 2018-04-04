@@ -7,6 +7,7 @@ const propTypes = {
 	step: PropTypes.number,
 	min: PropTypes.number,
 	max: PropTypes.number,
+	decimals: PropTypes.number,
 	onBlur: PropTypes.func,
 	onChange: PropTypes.func
 };
@@ -15,6 +16,7 @@ const defaultProps = {
 	step: 1,
 	min: 0,
 	max: 100,
+	decimals: 0,
 	onBlur: null,
 	onChange: null
 };
@@ -29,6 +31,31 @@ export default class InputNumeric extends Component {
 		}	else {
 			return null;
 		}
+	}
+
+	/**
+	 * Round number to specified precision (and avoid the floating-number arithmetic issue)
+	 * Source: MDN
+	 */
+	static round(number, decimals) {
+		// Shift the decimals to get a whole number, then round using Math.round() and move the number
+		// of whole numbers, based on the specified precision, back to decimals
+		return this.shift(Math.round(this.shift(number, decimals, false)), decimals, true);
+	}
+
+	/**
+	 * Helper function for rounding: Move the number of decimals, based on the specified precision, to
+	 * a whole number
+	 * @param {boolean} reverseShift If true, round to one decimal place; if false, round to the tens
+	 * Source: MDN
+	 */
+	static shift(number, decimals, reverseShift) {
+		let precision = decimals;
+		if (reverseShift) {
+			precision = -precision;
+		}
+		const numArray = (`${number}`).split('e');
+		return +(`${numArray[0]}e${numArray[1] ? (+numArray[1] + precision) : precision}`);
 	}
 
 	constructor(props) {
@@ -59,20 +86,19 @@ export default class InputNumeric extends Component {
 
 	validate(newValue) {
 		if (newValue === '') {
-			// no input
+			// no input: use previous value
+			return this.state.newValue;
+		}
+		const newNumber = parseFloat(newValue);
+		if (newNumber <= this.props.min) {
+			// value is min or smaller: set to min
 			return this.props.min;
-		} else if (newValue <= this.props.min) {
-			// value is min or smaller
-			return this.props.min;
-		} else if (newValue >= this.props.max) {
-			// value is max or larger
+		} else if (newNumber >= this.props.max) {
+			// value is max or larger: set to max
 			return this.props.max;
-		} else if (Number.isInteger(this.props.step)) {
-			// value is between min and max and an integer
-			return parseInt(newValue, 10);
 		} else {
-			// value is between min and max and a float
-			return parseFloat(newValue);
+			// value is between min and max: round number to specified number of decimals
+			return InputNumeric.round(newNumber, this.props.decimals);
 		}
 	}
 
