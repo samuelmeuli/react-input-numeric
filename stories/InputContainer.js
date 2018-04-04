@@ -15,6 +15,8 @@ export default class InputContainer extends Component {
 			<InputNumeric
 				value={this.state.value}
 				onChange={value => this.setState({ value })}
+				min={0}
+				max={50}
 			/>
 		);
 	}

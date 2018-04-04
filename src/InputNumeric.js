@@ -102,56 +102,62 @@ export default class InputNumeric extends Component {
 		}
 	}
 
+	/**
+	 * Decrement the input field's value by one step (this.props.step)
+	 */
 	decrement() {
-		const newValue = this.validate(this.props.value - this.props.step);
-		if (this.props.onChange) {
-			this.props.onChange(newValue);
-		}
+		const newValue = this.validate(this.state.newValue - this.props.step);
+		this.setState({
+			newValue
+		});
 	}
 
+	/**
+	 * Increment the input field's value by one step (this.props.step)
+	 */
+	increment() {
+		const newValue = this.validate(this.state.newValue + this.props.step);
+		this.setState({
+			newValue
+		});
+	}
+
+	/**
+	 * Start an interval in which the input field's value is repeatedly decremented
+	 */
 	startDecrement() {
 		this.decrement();
-		this.decrementTimeout = setTimeout(() => {
-			this.decrementInterval = setInterval(() => {
+		this.timeout = setTimeout(() => {
+			this.interval = setInterval(() => {
 				this.decrement();
 			}, this.mouseDownInterval);
 		}, this.mouseDownDelay);
 	}
 
-	stopDecrement() {
-		if (this.decrementTimeout) {
-			clearTimeout(this.decrementTimeout);
-		}
-		if (this.decrementInterval) {
-			clearInterval(this.decrementInterval);
-		}
-		if (this.props.onBlur) {
-			this.props.onBlur(this.state.newValue);
-		}
-	}
-
-	increment() {
-		const newValue = this.validate(this.props.value + this.props.step);
-		if (this.props.onChange) {
-			this.props.onChange(newValue);
-		}
-	}
-
+	/**
+	 * Start an interval in which the input field's value is repeatedly incremented
+	 */
 	startIncrement() {
 		this.increment();
-		this.incrementTimeout = setTimeout(() => {
-			this.incrementInterval = setInterval(() => {
+		this.timeout = setTimeout(() => {
+			this.interval = setInterval(() => {
 				this.increment();
 			}, this.mouseDownInterval);
 		}, this.mouseDownDelay);
 	}
 
-	stopIncrement() {
-		if (this.incrementTimeout) {
-			clearTimeout(this.incrementTimeout);
+	/**
+	 * Stop the decrement/increment interval and execute the onChange() and onBlur() functions
+	 */
+	stop() {
+		if (this.timeout) {
+			clearTimeout(this.timeout);
 		}
-		if (this.incrementInterval) {
-			clearInterval(this.incrementInterval);
+		if (this.interval) {
+			clearInterval(this.interval);
+		}
+		if (this.props.onChange) {
+			this.props.onChange(this.state.newValue);
 		}
 		if (this.props.onBlur) {
 			this.props.onBlur(this.state.newValue);
@@ -164,8 +170,8 @@ export default class InputNumeric extends Component {
 				<button
 					type="button"
 					onMouseDown={() => this.startDecrement()}
-					onMouseUp={() => this.stopDecrement()}
-					onMouseLeave={() => this.stopDecrement()}
+					onMouseUp={() => this.stop()}
+					onMouseLeave={() => this.stop()}
 				>
 					–
 				</button>
@@ -179,8 +185,8 @@ export default class InputNumeric extends Component {
 				<button
 					type="button"
 					onMouseDown={() => this.startIncrement()}
-					onMouseUp={() => this.stopIncrement()}
-					onMouseLeave={() => this.stopIncrement()}
+					onMouseUp={() => this.stop()}
+					onMouseLeave={() => this.stop()}
 				>
 					+
 				</button>
