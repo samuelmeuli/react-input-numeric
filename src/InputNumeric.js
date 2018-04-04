@@ -14,8 +14,8 @@ const propTypes = {
 
 const defaultProps = {
 	step: 1,
-	min: 0,
-	max: 100,
+	min: null,
+	max: null,
 	decimals: 0,
 	onBlur: null,
 	onChange: null
@@ -90,10 +90,10 @@ export default class InputNumeric extends Component {
 			return this.state.newValue;
 		}
 		const newNumber = parseFloat(newValue);
-		if (newNumber <= this.props.min) {
+		if (this.props.min && newNumber <= this.props.min) {
 			// value is min or smaller: set to min
 			return this.props.min;
-		} else if (newNumber >= this.props.max) {
+		} else if (this.props.max && newNumber >= this.props.max) {
 			// value is max or larger: set to max
 			return this.props.max;
 		} else {
