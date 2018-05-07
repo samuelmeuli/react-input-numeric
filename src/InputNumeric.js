@@ -1,32 +1,41 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Decimal } from 'decimal.js';
 
 
 const propTypes = {
 	value: PropTypes.number.isRequired,
-	step: PropTypes.number,
-	min: PropTypes.number,
 	max: PropTypes.number,
+	min: PropTypes.number,
 	decimals: PropTypes.number,
+	step: PropTypes.number,
+	showTrailingZeros: PropTypes.bool,
+	snapToStep: PropTypes.bool,
 	onBlur: PropTypes.func,
 	onChange: PropTypes.func
 };
 
 const defaultProps = {
-	step: 1,
-	min: null,
 	max: null,
-	decimals: 0,
+	min: null,
+	decimals: 2,
+	step: 1,
+	showTrailingZeros: false,
+	snapToStep: false,
 	onBlur: null,
 	onChange: null
 };
 
 export default class InputNumeric extends Component {
+	/**
+	 * Validate programmatically changed values
+	 */
 	static getDerivedStateFromProps(nextProps, prevState) {
-		const newValue = nextProps.value;
-		if (newValue !== prevState.value) {
+		const newValue = new Decimal(nextProps.value);
+		// Only perform validation if the entered value is different than the one stored in state
+		if (!newValue.equals(prevState.value)) {
 			return {
-				newValue
+				value: InputNumeric.validate(newValue, nextProps)
 			};
 		}	else {
 			return null;
@@ -34,71 +43,60 @@ export default class InputNumeric extends Component {
 	}
 
 	/**
-	 * Round number to specified precision (and avoid the floating-number arithmetic issue)
-	 * Source: MDN
+	 * Value validation:
+	 * - Make sure it the number lies between props.min and props.max (if specified)
+	 * - Snap manually entered values to the nearest step (if specified)
 	 */
-	static round(number, decimals) {
-		// Shift the decimals to get a whole number, then round using Math.round() and move the number
-		// of whole numbers, based on the specified precision, back to decimals
-		return this.shift(Math.round(this.shift(number, decimals, false)), decimals, true);
-	}
+	static validate(value, props) {
+		let newValue = value;
 
-	/**
-	 * Helper function for rounding: Move the number of decimals, based on the specified precision, to
-	 * a whole number
-	 * @param {boolean} reverseShift If true, round to one decimal place; if false, round to the tens
-	 * Source: MDN
-	 */
-	static shift(number, decimals, reverseShift) {
-		let precision = decimals;
-		if (reverseShift) {
-			precision = -precision;
+		// Make sure value is in specified range (between min and max)
+		if (props.min !== null && newValue.lessThanOrEqualTo(props.min)) {
+			// Value is min or smaller: set to min
+			return new Decimal(props.min);
+		} else if (props.max !== null && newValue.greaterThanOrEqualTo(props.max)) {
+			// Value is max or larger: set to max
+			return new Decimal(props.max);
 		}
-		const numArray = (`${number}`).split('e');
-		return +(`${numArray[0]}e${numArray[1] ? (+numArray[1] + precision) : precision}`);
+
+		// Snap to step if option is enabled
+		if (props.snapToStep === true) {
+			newValue = newValue.toNearest(props.step);
+		}
+
+		return newValue;
 	}
 
 	constructor(props) {
 		super(props);
-		this.mouseDownDelay = 250;
-		this.mouseDownInterval = 75;
+		this.mouseDownDelay = 250; // duration until mouseDown is treated as such (instead of click)
+		this.mouseDownInterval = 75; // interval for increasing/decreasing value on mouseDown
 
 		this.state = {
-			newValue: this.props.value
+			value: new Decimal(this.props.value), // final, validated number
+			valueEntered: '' // temporary, unvalidated number displayed while user is editing the input
 		};
 	}
 
-	onChange(e) {
+	onInputChange(e) {
+		// Temporarily save the new value entered in the input field
 		this.setState({
-			newValue: e.target.value
+			valueEntered: e.target.value
 		});
 	}
 
-	onBlur() {
-		const newValue = this.validate(this.state.newValue);
+	onInputBlur() {
+		// Validate and save this.state.valueEntered, execute this.props.onChange and this.props.onBlur
+		const value = InputNumeric.validate(new Decimal(this.state.valueEntered), this.props);
+		this.setState({
+			value,
+			valueEntered: ''
+		});
 		if (this.props.onChange) {
-			this.props.onChange(newValue);
+			this.props.onChange(value.toNumber());
 		}
 		if (this.props.onBlur) {
-			this.props.onBlur(newValue);
-		}
-	}
-
-	validate(newValue) {
-		if (newValue === '') {
-			// no input: use previous value
-			return this.state.newValue;
-		}
-		const newNumber = parseFloat(newValue);
-		if (this.props.min && newNumber <= this.props.min) {
-			// value is min or smaller: set to min
-			return this.props.min;
-		} else if (this.props.max && newNumber >= this.props.max) {
-			// value is max or larger: set to max
-			return this.props.max;
-		} else {
-			// value is between min and max: round number to specified number of decimals
-			return InputNumeric.round(newNumber, this.props.decimals);
+			this.props.onBlur(value.toNumber());
 		}
 	}
 
@@ -106,20 +104,36 @@ export default class InputNumeric extends Component {
 	 * Decrement the input field's value by one step (this.props.step)
 	 */
 	decrement() {
-		const newValue = this.validate(this.state.newValue - this.props.step);
-		this.setState({
-			newValue
-		});
+		const oldValue = this.state.value;
+		if (oldValue.modulo(this.props.step).isZero()) {
+			// If current value is divisible by step: Subtract step
+			this.setState({
+				value: InputNumeric.validate(oldValue.minus(this.props.step), this.props)
+			});
+		} else {
+			// If current value is not divisible by step: Round to nearest lower multiple of step
+			this.setState({
+				value: oldValue.toNearest(this.props.step, Decimal.ROUND_DOWN)
+			});
+		}
 	}
 
 	/**
 	 * Increment the input field's value by one step (this.props.step)
 	 */
 	increment() {
-		const newValue = this.validate(this.state.newValue + this.props.step);
-		this.setState({
-			newValue
-		});
+		const oldValue = this.state.value;
+		if (oldValue.modulo(this.props.step).isZero()) {
+			// If current value is divisible by step: Add step
+			this.setState({
+				value: InputNumeric.validate(oldValue.plus(this.props.step), this.props)
+			});
+		} else {
+			// If current value is not divisible by step: Round to nearest higher multiple of step
+			this.setState({
+				value: oldValue.toNearest(this.props.step, Decimal.ROUND_UP)
+			});
+		}
 	}
 
 	/**
@@ -157,14 +171,27 @@ export default class InputNumeric extends Component {
 			clearInterval(this.interval);
 		}
 		if (this.props.onChange) {
-			this.props.onChange(this.state.newValue);
+			this.props.onChange(this.state.value.toNumber());
 		}
 		if (this.props.onBlur) {
-			this.props.onBlur(this.state.newValue);
+			this.props.onBlur(this.state.value.toNumber());
 		}
 	}
 
 	render() {
+		// Determine value to be displayed in the input field
+		let displayedValue;
+		if (this.state.valueEntered !== '') {
+			// Display entered (non-validated) value while input field is being edited
+			displayedValue = this.state.valueEntered;
+		} else if (this.props.showTrailingZeros === true) {
+			// Add trailing zeros if option is enabled
+			displayedValue = this.state.value.toFixed(this.props.decimals);
+		} else {
+			// Round to specified number of decimals
+			displayedValue = this.state.value.toDecimalPlaces(this.props.decimals);
+		}
+
 		return (
 			<div className="number-input">
 				<button
@@ -177,10 +204,9 @@ export default class InputNumeric extends Component {
 				</button>
 				<input
 					type="number"
-					value={this.state.newValue}
-					step={this.props.step}
-					onChange={e => this.onChange(e)}
-					onBlur={() => this.onBlur()}
+					value={displayedValue}
+					onChange={e => this.onInputChange(e)}
+					onBlur={() => this.onInputBlur()}
 				/>
 				<button
 					type="button"

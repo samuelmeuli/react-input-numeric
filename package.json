@@ -12,6 +12,7 @@
 		"prepush": "npm run lint"
 	},
 	"dependencies": {
+		"decimal.js": "^10.0.0",
 		"prop-types": "^15.6.1"
 	},
 	"peerDependencies": {

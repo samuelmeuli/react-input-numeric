@@ -8,7 +8,7 @@ export default {
 		file: 'lib/InputNumeric.js',
 		format: 'cjs'
 	},
-	external: ['react', 'prop-types'],
+	external: ['react', 'prop-types', 'decimal.js'],
 	plugins: [
 		postcss(),
 		babel({
