@@ -31,40 +31,52 @@ export default class InputNumeric extends Component {
 	 * Validate programmatically changed values
 	 */
 	static getDerivedStateFromProps(nextProps, prevState) {
-		const newValue = new Decimal(nextProps.value);
+		// Check whether value is a number
+		let newValue;
+		try {
+			newValue = new Decimal(nextProps.value);
+		} catch (e) {
+			return null;
+		}
+
 		// Only perform validation if the entered value is different than the one stored in state
 		if (!newValue.equals(prevState.value)) {
+			const transformedValue = InputNumeric.applyOptions(newValue, prevState.value, nextProps);
 			return {
-				value: InputNumeric.validate(newValue, nextProps)
+				value: transformedValue,
+				valueEntered: null
 			};
-		}	else {
+		} else {
 			return null;
 		}
 	}
 
 	/**
-	 * Value validation:
-	 * - Make sure it the number lies between props.min and props.max (if specified)
-	 * - Snap manually entered values to the nearest step (if specified)
+	 * Transform value according to props:
+	 * - Make sure it the Decimal lies between props.min and props.max (if specified)
+	 * - Snap manually entered Decimals to the nearest step (if specified)
+	 * @param {Decimal} newValue - value to be transformed
+	 * @param {Decimal} oldValue - effective value stored in state
+	 * @param {object} props
 	 */
-	static validate(value, props) {
-		let newValue = value;
+	static applyOptions(newValue, oldValue, props) {
+		let transformedValue = newValue;
 
 		// Make sure value is in specified range (between min and max)
-		if (props.min !== null && newValue.lessThanOrEqualTo(props.min)) {
+		if (props.min !== null && transformedValue.lessThanOrEqualTo(props.min)) {
 			// Value is min or smaller: set to min
 			return new Decimal(props.min);
-		} else if (props.max !== null && newValue.greaterThanOrEqualTo(props.max)) {
+		} else if (props.max !== null && transformedValue.greaterThanOrEqualTo(props.max)) {
 			// Value is max or larger: set to max
 			return new Decimal(props.max);
 		}
 
 		// Snap to step if option is enabled
 		if (props.snapToStep === true) {
-			newValue = newValue.toNearest(props.step);
+			transformedValue = transformedValue.toNearest(props.step);
 		}
 
-		return newValue;
+		return transformedValue;
 	}
 
 	constructor(props) {
@@ -72,9 +84,10 @@ export default class InputNumeric extends Component {
 		this.mouseDownDelay = 250; // duration until mouseDown is treated as such (instead of click)
 		this.mouseDownInterval = 75; // interval for increasing/decreasing value on mouseDown
 
+		const value = new Decimal(this.props.value);
 		this.state = {
-			value: new Decimal(this.props.value), // final, validated number
-			valueEntered: '' // temporary, unvalidated number displayed while user is editing the input
+			value, // final, validated number (Decimal)
+			valueEntered: null // unvalidated number displayed while editing input (null or String)
 		};
 	}
 
@@ -86,11 +99,22 @@ export default class InputNumeric extends Component {
 	}
 
 	onInputBlur() {
-		// Validate and save this.state.valueEntered, execute this.props.onChange and this.props.onBlur
-		const value = InputNumeric.validate(new Decimal(this.state.valueEntered), this.props);
+		// Reset input field if value is not a number
+		let valueEntered;
+		try {
+			valueEntered = new Decimal(this.state.valueEntered);
+		} catch (e) {
+			this.setState({
+				valueEntered: null
+			});
+			return;
+		}
+
+		// Transform and save valueEntered according to props, execute onChange and onBlur from props
+		const value = InputNumeric.applyOptions(valueEntered, this.state.value, this.props);
 		this.setState({
 			value,
-			valueEntered: ''
+			valueEntered: null
 		});
 		if (this.props.onChange) {
 			this.props.onChange(value.toNumber());
@@ -107,13 +131,21 @@ export default class InputNumeric extends Component {
 		const oldValue = this.state.value;
 		if (oldValue.modulo(this.props.step).isZero()) {
 			// If current value is divisible by step: Subtract step
+			const newValue = InputNumeric.applyOptions(
+				oldValue.minus(this.props.step),
+				oldValue,
+				this.props
+			);
 			this.setState({
-				value: InputNumeric.validate(oldValue.minus(this.props.step), this.props)
+				value: newValue,
+				valueEntered: null
 			});
 		} else {
 			// If current value is not divisible by step: Round to nearest lower multiple of step
+			const newValue = oldValue.toNearest(this.props.step, Decimal.ROUND_DOWN);
 			this.setState({
-				value: oldValue.toNearest(this.props.step, Decimal.ROUND_DOWN)
+				value: newValue,
+				valueEntered: null
 			});
 		}
 	}
@@ -125,13 +157,21 @@ export default class InputNumeric extends Component {
 		const oldValue = this.state.value;
 		if (oldValue.modulo(this.props.step).isZero()) {
 			// If current value is divisible by step: Add step
+			const newValue = InputNumeric.applyOptions(
+				oldValue.plus(this.props.step),
+				oldValue,
+				this.props
+			);
 			this.setState({
-				value: InputNumeric.validate(oldValue.plus(this.props.step), this.props)
+				value: newValue,
+				valueEntered: null
 			});
 		} else {
 			// If current value is not divisible by step: Round to nearest higher multiple of step
+			const newValue = oldValue.toNearest(this.props.step, Decimal.ROUND_UP);
 			this.setState({
-				value: oldValue.toNearest(this.props.step, Decimal.ROUND_UP)
+				value: newValue,
+				valueEntered: null
 			});
 		}
 	}
@@ -164,24 +204,26 @@ export default class InputNumeric extends Component {
 	 * Stop the decrement/increment interval and execute the onChange() and onBlur() functions
 	 */
 	stop() {
-		if (this.timeout) {
-			clearTimeout(this.timeout);
-		}
-		if (this.interval) {
-			clearInterval(this.interval);
-		}
-		if (this.props.onChange) {
-			this.props.onChange(this.state.value.toNumber());
-		}
-		if (this.props.onBlur) {
-			this.props.onBlur(this.state.value.toNumber());
+		if (this.timeout || this.interval) {
+			if (this.timeout) {
+				clearTimeout(this.timeout);
+			}
+			if (this.interval) {
+				clearInterval(this.interval);
+			}
+			if (this.props.onChange) {
+				this.props.onChange(this.state.value.toNumber());
+			}
+			if (this.props.onBlur) {
+				this.props.onBlur(this.state.value.toNumber());
+			}
 		}
 	}
 
 	render() {
 		// Determine value to be displayed in the input field
 		let displayedValue;
-		if (this.state.valueEntered !== '') {
+		if (this.state.valueEntered != null) {
 			// Display entered (non-validated) value while input field is being edited
 			displayedValue = this.state.valueEntered;
 		} else if (this.props.showTrailingZeros === true) {

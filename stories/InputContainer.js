@@ -6,7 +6,7 @@ export default class InputContainer extends Component {
 		super();
 
 		this.state = {
-			value: 10
+			value: 0
 		};
 	}
 
@@ -15,10 +15,8 @@ export default class InputContainer extends Component {
 			<InputNumeric
 				value={this.state.value}
 				onChange={value => this.setState({ value })}
-				min={-10}
 				max={10}
 				decimals={4}
-				step={0.2}
 				snapToStep
 			/>
 		);
