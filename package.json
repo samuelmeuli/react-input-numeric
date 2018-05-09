@@ -4,7 +4,7 @@
 	"main": "lib/InputNumeric.js",
 	"scripts": {
 		"start": "run-p rollup storybook",
-		"rollup": "rollup -c --watch",
+		"rollup": "rollup -c --sourcemap --watch",
 		"storybook": "start-storybook -p 6006",
 		"build": "rollup -c",
 		"lint": "eslint .",
