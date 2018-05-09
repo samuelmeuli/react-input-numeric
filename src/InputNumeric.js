@@ -42,6 +42,12 @@ export default class InputNumeric extends Component {
 		// Only perform validation if the entered value is different than the one stored in state
 		if (!newValue.equals(prevState.value)) {
 			const transformedValue = InputNumeric.applyOptions(newValue, prevState.value, nextProps);
+			if (nextProps.onChange) {
+				nextProps.onChange(newValue.toNumber());
+			}
+			if (nextProps.onBlur) {
+				nextProps.onBlur(newValue.toNumber());
+			}
 			return {
 				value: transformedValue,
 				valueEntered: null
