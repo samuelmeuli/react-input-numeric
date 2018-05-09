@@ -52,9 +52,8 @@ export default class InputNumeric extends Component {
 				value: transformedValue,
 				valueEntered: null
 			};
-		} else {
-			return null;
 		}
+		return null;
 	}
 
 	/**
