@@ -9,6 +9,8 @@ const propTypes = {
 	min: PropTypes.number,
 	decimals: PropTypes.number,
 	step: PropTypes.number,
+	disabled: PropTypes.bool,
+	showButtons: PropTypes.bool,
 	showTrailingZeros: PropTypes.bool,
 	snapToStep: PropTypes.bool,
 	onBlur: PropTypes.func,
@@ -20,6 +22,8 @@ const defaultProps = {
 	min: null,
 	decimals: 2,
 	step: 1,
+	disabled: false,
+	showButtons: true,
 	showTrailingZeros: false,
 	snapToStep: false,
 	onBlur: null,
@@ -244,30 +248,40 @@ export default class InputNumeric extends Component {
 			displayedValue = this.state.value.toDecimalPlaces(this.props.decimals);
 		}
 
+		const decrementButton = (
+			<button
+				type="button"
+				disabled={this.props.disabled}
+				onMouseDown={() => this.startDecrement()}
+				onMouseUp={() => this.stop()}
+				onMouseLeave={() => this.stop()}
+			>
+				–
+			</button>
+		);
+		const incrementButton = (
+			<button
+				type="button"
+				disabled={this.props.disabled}
+				onMouseDown={() => this.startIncrement()}
+				onMouseUp={() => this.stop()}
+				onMouseLeave={() => this.stop()}
+			>
+				+
+			</button>
+		);
+
 		return (
 			<div className="number-input">
-				<button
-					type="button"
-					onMouseDown={() => this.startDecrement()}
-					onMouseUp={() => this.stop()}
-					onMouseLeave={() => this.stop()}
-				>
-					–
-				</button>
+				{this.props.showButtons && decrementButton}
 				<input
 					type="number"
+					disabled={this.props.disabled}
 					value={displayedValue}
 					onChange={e => this.onInputChange(e)}
 					onBlur={() => this.onInputBlur()}
 				/>
-				<button
-					type="button"
-					onMouseDown={() => this.startIncrement()}
-					onMouseUp={() => this.stop()}
-					onMouseLeave={() => this.stop()}
-				>
-					+
-				</button>
+				{this.props.showButtons && incrementButton}
 			</div>
 		);
 	}
