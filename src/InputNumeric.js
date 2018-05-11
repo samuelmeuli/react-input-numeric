@@ -145,6 +145,9 @@ export default class InputNumeric extends Component {
 				value: newValue,
 				valueEntered: null
 			});
+			if (this.props.onChange) {
+				this.props.onChange(newValue.toNumber());
+			}
 		} else {
 			// If current value is not divisible by step: Round to nearest lower multiple of step
 			const newValue = oldValue.toNearest(this.props.step, Decimal.ROUND_DOWN);
@@ -171,6 +174,9 @@ export default class InputNumeric extends Component {
 				value: newValue,
 				valueEntered: null
 			});
+			if (this.props.onChange) {
+				this.props.onChange(newValue.toNumber());
+			}
 		} else {
 			// If current value is not divisible by step: Round to nearest higher multiple of step
 			const newValue = oldValue.toNearest(this.props.step, Decimal.ROUND_UP);
@@ -212,12 +218,11 @@ export default class InputNumeric extends Component {
 		if (this.timeout || this.interval) {
 			if (this.timeout) {
 				clearTimeout(this.timeout);
+				this.timeout = null;
 			}
 			if (this.interval) {
 				clearInterval(this.interval);
-			}
-			if (this.props.onChange) {
-				this.props.onChange(this.state.value.toNumber());
+				this.interval = null;
 			}
 			if (this.props.onBlur) {
 				this.props.onBlur(this.state.value.toNumber());
