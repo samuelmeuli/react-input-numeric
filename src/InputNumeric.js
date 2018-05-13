@@ -277,8 +277,9 @@ export default class InputNumeric extends Component {
 			<div className="number-input">
 				{this.props.showButtons && decrementButton}
 				<input
-					type="number"
 					name={null}
+					type="number"
+					pattern={Number.isInteger(this.props.step) ? '[0-9]*' : '[0-9\.]*'}
 					disabled={this.props.disabled}
 					value={displayedValue}
 					onChange={e => this.onInputChange(e)}
