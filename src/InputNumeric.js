@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Decimal } from 'decimal.js';
 
+import './style.scss';
+
 
 const propTypes = {
 	value: PropTypes.number.isRequired,
@@ -274,7 +276,7 @@ export default class InputNumeric extends Component {
 		);
 
 		return (
-			<div className="number-input">
+			<div className="input-numeric">
 				{this.props.showButtons && decrementButton}
 				<input
 					name={null}
