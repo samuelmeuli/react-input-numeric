@@ -9,6 +9,7 @@ const propTypes = {
 	min: PropTypes.number,
 	decimals: PropTypes.number,
 	step: PropTypes.number,
+	name: PropTypes.string,
 	disabled: PropTypes.bool,
 	showButtons: PropTypes.bool,
 	showTrailingZeros: PropTypes.bool,
@@ -22,6 +23,7 @@ const defaultProps = {
 	min: null,
 	decimals: 2,
 	step: 1,
+	name: null,
 	disabled: false,
 	showButtons: true,
 	showTrailingZeros: false,
@@ -276,6 +278,7 @@ export default class InputNumeric extends Component {
 				{this.props.showButtons && decrementButton}
 				<input
 					type="number"
+					name={null}
 					disabled={this.props.disabled}
 					value={displayedValue}
 					onChange={e => this.onInputChange(e)}
