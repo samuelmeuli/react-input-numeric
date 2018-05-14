@@ -13,7 +13,7 @@ const propTypes = {
 export default function Code(props) {
 	return (
 		<code>
-			<p>{'<InputNumeric'}</p>
+			<p className="component-name">{'<InputNumeric'}</p>
 			{
 				Object.keys(props.options).map((key) => {
 					const value = props.options[key];
@@ -26,7 +26,7 @@ export default function Code(props) {
 					return <p key={key}>&nbsp;&nbsp;{key}=&#123;{value}&#125;</p>;
 				})
 			}
-			<p>{'/>'}</p>
+			<p className="component-name">{'/>'}</p>
 		</code>
 	);
 }

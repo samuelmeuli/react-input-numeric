@@ -1,8 +1,10 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { withState } from '@dump247/storybook-state';
+
 import Code from './Code';
 import InputNumeric from '../lib/InputNumeric';
+import './style.css';
 
 
 storiesOf('InputNumeric', module)
@@ -13,6 +15,7 @@ storiesOf('InputNumeric', module)
 				value={store.state.value}
 				onChange={value => store.set({ value })}
 			/>
+			<br />
 			<Code
 				options={{
 					value: 'this.state.value',
@@ -30,6 +33,7 @@ storiesOf('InputNumeric', module)
 				step={0.2}
 				onChange={value => store.set({ value })}
 			/>
+			<br />
 			<Code
 				options={{
 					value: 'this.state.value',
@@ -50,6 +54,7 @@ storiesOf('InputNumeric', module)
 				step={0.01}
 				onChange={value => store.set({ value })}
 			/>
+			<br />
 			<Code
 				options={{
 					value: 'this.state.value',
