@@ -17,7 +17,8 @@ const propTypes = {
 	showTrailingZeros: PropTypes.bool,
 	snapToStep: PropTypes.bool,
 	onBlur: PropTypes.func,
-	onChange: PropTypes.func
+	onChange: PropTypes.func,
+	onFocus: PropTypes.func
 };
 
 const defaultProps = {
@@ -31,7 +32,8 @@ const defaultProps = {
 	showTrailingZeros: false,
 	snapToStep: false,
 	onBlur: null,
-	onChange: null
+	onChange: null,
+	onFocus: null
 };
 
 export default class InputNumeric extends Component {
@@ -134,6 +136,12 @@ export default class InputNumeric extends Component {
 		}
 		if (this.props.onBlur) {
 			this.props.onBlur(value.toNumber());
+		}
+	}
+
+	onInputFocus() {
+		if (this.props.onFocus) {
+			this.props.onFocus(this.state.value.toNumber());
 		}
 	}
 
@@ -302,6 +310,7 @@ export default class InputNumeric extends Component {
 					value={displayedValue}
 					onChange={e => this.onInputChange(e)}
 					onBlur={() => this.onInputBlur()}
+					onFocus={() => this.onInputFocus()}
 					onKeyDown={(e) => {
 						if (e.keyCode === 38) {
 							e.preventDefault();
