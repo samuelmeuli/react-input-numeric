@@ -302,6 +302,20 @@ export default class InputNumeric extends Component {
 					value={displayedValue}
 					onChange={e => this.onInputChange(e)}
 					onBlur={() => this.onInputBlur()}
+					onKeyDown={(e) => {
+						if (e.keyCode === 38) {
+							e.preventDefault();
+							if (!this.interval) {
+								this.startIncrement();
+							}
+						} else if (e.keyCode === 40) {
+							e.preventDefault();
+							if (!this.interval) {
+								this.startDecrement();
+							}
+						}
+					}}
+					onKeyUp={() => this.stop()}
 				/>
 				{this.props.showButtons && incrementButton}
 			</div>
