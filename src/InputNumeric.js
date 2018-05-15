@@ -259,6 +259,14 @@ export default class InputNumeric extends Component {
 				onMouseDown={() => this.startDecrement()}
 				onMouseUp={() => this.stop()}
 				onMouseLeave={() => this.stop()}
+				onTouchStart={(e) => {
+					e.preventDefault(); // prevent onClick from being fired
+					this.startDecrement();
+				}}
+				onTouchEnd={(e) => {
+					e.preventDefault(); // prevent onClick from being fired
+					this.stop();
+				}}
 			>
 				–
 			</button>
@@ -270,6 +278,14 @@ export default class InputNumeric extends Component {
 				onMouseDown={() => this.startIncrement()}
 				onMouseUp={() => this.stop()}
 				onMouseLeave={() => this.stop()}
+				onTouchStart={(e) => {
+					e.preventDefault(); // prevent onClick from being fired
+					this.startIncrement();
+				}}
+				onTouchEnd={(e) => {
+					e.preventDefault(); // prevent onClick from being fired
+					this.stop();
+				}}
 			>
 				+
 			</button>

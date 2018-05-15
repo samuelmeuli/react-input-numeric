@@ -36,6 +36,7 @@ $color-border: #C0C0C0;
 		width: $height;
 		padding: 0;
 		background: $color-background-buttons;
+		user-select: none;
 
 		&:hover:not(:disabled) {
 			background: darken($color-background-buttons, 3%);
