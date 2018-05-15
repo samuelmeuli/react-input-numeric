@@ -1,7 +1,21 @@
 {
 	"name": "react-input-numeric",
 	"version": "0.1.0",
+	"description": "Better number input for React",
+	"keywords": [
+		"react",
+		"component",
+		"react-component",
+		"input",
+		"number",
+		"numeric",
+		"form"
+	],
 	"main": "lib/InputNumeric.js",
+	"author": "Samuel Meuli <dev@samuelmeuli.com>",
+	"repository": "github:samuelmeuli/react-input-numeric",
+	"homepage": "https://samuelmeuli.github.io/react-input-numeric",
+	"license": "MIT",
 	"scripts": {
 		"start": "npm-run-all build:rollup --parallel start:*",
 		"start:rollup": "rollup --config --sourcemap --watch",
