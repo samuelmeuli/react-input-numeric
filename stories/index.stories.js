@@ -9,7 +9,7 @@ import './style.css';
 
 storiesOf('InputNumeric', module)
 	.add('Default', withState({ value: 10 })(({ store }) => (
-		<div>
+		<main>
 			<InputNumeric
 				{...store.state}
 				value={store.state.value}
@@ -22,10 +22,10 @@ storiesOf('InputNumeric', module)
 					onChange: 'value => this.setState({ value })'
 				}}
 			/>
-		</div>
+		</main>
 	)))
 	.add('Non-integer step', withState({ value: 10 })(({ store }) => (
-		<div>
+		<main>
 			<InputNumeric
 				{...store.state}
 				value={store.state.value}
@@ -42,10 +42,10 @@ storiesOf('InputNumeric', module)
 					onChange: 'value => this.setState({ value })'
 				}}
 			/>
-		</div>
+		</main>
 	)))
 	.add('Trailing zeros', withState({ value: 10 })(({ store }) => (
-		<div>
+		<main>
 			<InputNumeric
 				{...store.state}
 				value={store.state.value}
@@ -64,5 +64,5 @@ storiesOf('InputNumeric', module)
 					onChange: 'value => this.setState({ value })'
 				}}
 			/>
-		</div>
+		</main>
 	)));
