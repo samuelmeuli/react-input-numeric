@@ -55,9 +55,6 @@ export default class InputNumeric extends Component {
 			if (nextProps.onChange) {
 				nextProps.onChange(newValue.toNumber());
 			}
-			if (nextProps.onBlur) {
-				nextProps.onBlur(newValue.toNumber());
-			}
 			return {
 				value: transformedValue,
 				valueEntered: null
