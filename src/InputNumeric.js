@@ -38,40 +38,13 @@ const defaultProps = {
 
 export default class InputNumeric extends Component {
 	/**
-	 * Validate programmatically changed values
-	 */
-	static getDerivedStateFromProps(nextProps, prevState) {
-		// Check whether value is a number
-		let newValue;
-		try {
-			newValue = new Decimal(nextProps.value);
-		} catch (e) {
-			return null;
-		}
-
-		// Only perform validation if the entered value is different than the one stored in state
-		if (!newValue.equals(prevState.value)) {
-			const transformedValue = InputNumeric.applyOptions(newValue, prevState.value, nextProps);
-			if (nextProps.onChange) {
-				nextProps.onChange(newValue.toNumber());
-			}
-			return {
-				value: transformedValue,
-				valueEntered: null
-			};
-		}
-		return null;
-	}
-
-	/**
 	 * Transform value according to props:
 	 * - Make sure it the Decimal lies between props.min and props.max (if specified)
 	 * - Snap manually entered Decimals to the nearest step (if specified)
 	 * @param {Decimal} newValue - value to be transformed
-	 * @param {Decimal} oldValue - effective value stored in state
 	 * @param {object} props
 	 */
-	static applyOptions(newValue, oldValue, props) {
+	static applyOptions(newValue, props) {
 		let transformedValue = newValue;
 
 		// Make sure value is in specified range (between min and max)
@@ -103,6 +76,31 @@ export default class InputNumeric extends Component {
 		};
 	}
 
+	/**
+	 * Validate programmatically changed values
+	 */
+	componentDidUpdate() {
+		// Check whether value is a number
+		let newValue;
+		try {
+			newValue = new Decimal(this.props.value);
+		} catch (e) {
+			return;
+		}
+
+		// Only perform validation if the entered value is different than the one stored in state
+		if (!newValue.equals(this.state.value)) {
+			const transformedValue = InputNumeric.applyOptions(newValue, this.props);
+			this.setState({
+				value: transformedValue,
+				valueEntered: null
+			});
+			if (this.props.onChange) {
+				this.props.onChange(transformedValue.toNumber());
+			}
+		}
+	}
+
 	onInputChange(e) {
 		// Temporarily save the new value entered in the input field
 		this.setState({
@@ -123,7 +121,7 @@ export default class InputNumeric extends Component {
 		}
 
 		// Transform and save valueEntered according to props, execute onChange and onBlur from props
-		const value = InputNumeric.applyOptions(valueEntered, this.state.value, this.props);
+		const value = InputNumeric.applyOptions(valueEntered, this.props);
 		this.setState({
 			value,
 			valueEntered: null
@@ -147,27 +145,20 @@ export default class InputNumeric extends Component {
 	 */
 	decrement() {
 		const oldValue = this.state.value;
+		let newValue;
 		if (oldValue.modulo(this.props.step).isZero()) {
 			// If current value is divisible by step: Subtract step
-			const newValue = InputNumeric.applyOptions(
-				oldValue.minus(this.props.step),
-				oldValue,
-				this.props
-			);
-			this.setState({
-				value: newValue,
-				valueEntered: null
-			});
-			if (this.props.onChange) {
-				this.props.onChange(newValue.toNumber());
-			}
+			newValue = InputNumeric.applyOptions(oldValue.minus(this.props.step), this.props);
 		} else {
 			// If current value is not divisible by step: Round to nearest lower multiple of step
-			const newValue = oldValue.toNearest(this.props.step, Decimal.ROUND_DOWN);
-			this.setState({
-				value: newValue,
-				valueEntered: null
-			});
+			newValue = oldValue.toNearest(this.props.step, Decimal.ROUND_DOWN);
+		}
+		this.setState({
+			value: newValue,
+			valueEntered: null
+		});
+		if (this.props.onChange) {
+			this.props.onChange(newValue.toNumber());
 		}
 	}
 
@@ -176,27 +167,20 @@ export default class InputNumeric extends Component {
 	 */
 	increment() {
 		const oldValue = this.state.value;
+		let newValue;
 		if (oldValue.modulo(this.props.step).isZero()) {
 			// If current value is divisible by step: Add step
-			const newValue = InputNumeric.applyOptions(
-				oldValue.plus(this.props.step),
-				oldValue,
-				this.props
-			);
-			this.setState({
-				value: newValue,
-				valueEntered: null
-			});
-			if (this.props.onChange) {
-				this.props.onChange(newValue.toNumber());
-			}
+			newValue = InputNumeric.applyOptions(oldValue.plus(this.props.step), this.props);
 		} else {
 			// If current value is not divisible by step: Round to nearest higher multiple of step
-			const newValue = oldValue.toNearest(this.props.step, Decimal.ROUND_UP);
-			this.setState({
-				value: newValue,
-				valueEntered: null
-			});
+			newValue = oldValue.toNearest(this.props.step, Decimal.ROUND_UP);
+		}
+		this.setState({
+			value: newValue,
+			valueEntered: null
+		});
+		if (this.props.onChange) {
+			this.props.onChange(newValue.toNumber());
 		}
 	}
 
